@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, Settings, Printer, Globe, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Camera, Settings, Printer, Globe, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 import { AppLanguage } from '../types';
 import { translations } from '../utils/translations';
 
@@ -10,6 +10,7 @@ interface NavbarProps {
   onOpenSettings: () => void;
   onPrint: () => void;
   hasProcessed: boolean;
+  onLoadDemo?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -19,6 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSettings,
   onPrint,
   hasProcessed,
+  onLoadDemo,
 }) => {
   const t = translations[language];
 
@@ -63,6 +65,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               </>
             )}
           </div>
+
+          {/* Quick Demo Portrait Button */}
+          {onLoadDemo && (
+            <button
+              onClick={onLoadDemo}
+              className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white text-xs font-semibold shadow-md transition border border-indigo-400/30 hover:scale-105"
+              title="Load demo photo to preview all features"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-cyan-200" />
+              <span>{language === 'bn' ? 'ডেমো ছবি' : 'Demo Photo'}</span>
+            </button>
+          )}
 
           {/* Language Switcher */}
           <div className="flex items-center bg-slate-800/80 rounded-lg p-0.5 border border-slate-700">

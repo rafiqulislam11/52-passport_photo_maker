@@ -23,6 +23,10 @@ export const translations = {
     uploadedQueue: "Upload Queue",
     batchProcessAll: "Process All Photos",
     clearAll: "Clear Queue",
+    tryDemoBtn: "✨ Try Demo Portrait (Test All Features)",
+    tryDemoDesc: "Instant 1-click test with professional studio portrait",
+    quickPresets: "Quick Presets",
+    exportHelpText: "Process photo to unlock high-resolution A4 PDF, JPG sheets & ZIP export",
 
     // Step 2: Preset & Framing
     presetTitle: "2. Photo Size & Preset",
@@ -141,6 +145,10 @@ export const translations = {
     uploadedQueue: "আপলোড তালিকা",
     batchProcessAll: "সব ছবি প্রসেস করুন",
     clearAll: "তালিকা খালি করুন",
+    tryDemoBtn: "✨ ডেমো ছবি লোড করুন (ফুল ফিচার দেখুন)",
+    tryDemoDesc: "১-ক্লিকে পেশাদার বায়োমেট্রিক ছবি দিয়ে সব ফিচার টেস্ট করুন",
+    quickPresets: "জনপ্রিয় মাপসমূহ",
+    exportHelpText: "সকল হাই-রেজোলিউশন A4 PDF, JPG প্রিন্ট শিট ও ZIP ডাউনলোড করতে ছবি প্রসেস করুন",
 
     // Step 2: Preset & Framing
     presetTitle: "২. ছবির সাইজ ও প্রিসেট",

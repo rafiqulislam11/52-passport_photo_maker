@@ -225,7 +225,72 @@ export function usePassportStudio() {
     [photoSettings.photo_width_mm, photoSettings.photo_height_mm]
   );
 
+  // Load Demo Photo with full features enabled
+  const handleLoadDemoPhoto = useCallback(async () => {
+    setIsProcessing(true);
+    setStatusMessage('Loading demo portrait...');
+    try {
+      let res = await fetch('/demo_portrait.jpg');
+      if (!res.ok) {
+        res = await fetch('/api/sample-photo');
+      }
+      const blob = await res.blob();
+      const demoFile = new File([blob], 'demo_portrait.jpg', { type: 'image/jpeg' });
+
+      const uploadResult = await uploadImage(demoFile);
+      const localPreview = URL.createObjectURL(demoFile);
+
+      const newItem: UploadItem = {
+        id: uploadResult.file_id,
+        file: demoFile,
+        originalName: 'demo_portrait.jpg',
+        width: uploadResult.width,
+        height: uploadResult.height,
+        format: 'JPG',
+        sizeBytes: demoFile.size,
+        previewUrl: uploadResult.preview_url || localPreview,
+        faceInfo: uploadResult.face_info,
+        status: 'idle',
+      };
+
+      setQueue([newItem]);
+      setActiveId(uploadResult.file_id);
+
+      setStatusMessage('Auto-processing photo with biometric AI...');
+      const processed = await processPhotoApi(
+        uploadResult.file_id,
+        photoSettings,
+        photoSettings.custom_bg_file
+      );
+
+      setQueue([
+        {
+          ...newItem,
+          status: 'done',
+          processedResult: processed,
+        },
+      ]);
+
+      await updateA4Preview(processed.file_id, a4Settings);
+      setStatusMessage('Demo loaded! All features active & ready.');
+
+      try {
+        confetti({
+          particleCount: 60,
+          spread: 70,
+          origin: { y: 0.7 },
+        });
+      } catch {}
+    } catch (err: any) {
+      console.error('Error loading demo portrait:', err);
+      setStatusMessage(`Error: ${err.message || 'Failed to load demo portrait'}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [photoSettings, a4Settings, updateA4Preview]);
+
   // Auto-fit A4 Layout
+
   const handleAutoFitA4 = useCallback(() => {
     const pw = a4Settings.paper_size === 'Letter' ? 215.9 : 210.0;
     const ph = a4Settings.paper_size === 'Letter' ? 279.4 : 297.0;
@@ -374,6 +439,7 @@ export function usePassportStudio() {
     setActiveTab,
     statusMessage,
     handleProcessActive,
+    handleLoadDemoPhoto,
     updateA4Preview,
     handleAutoFitA4,
     handlePageChange,

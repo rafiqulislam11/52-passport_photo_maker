@@ -15,6 +15,7 @@ interface ExportSectionProps {
   onDownloadA4Pdf: () => void;
   onDownloadZip: () => void;
   onPrintA4: () => void;
+  onLoadDemo?: () => void;
 }
 
 export const ExportSection: React.FC<ExportSectionProps> = ({
@@ -29,6 +30,7 @@ export const ExportSection: React.FC<ExportSectionProps> = ({
   onDownloadA4Pdf,
   onDownloadZip,
   onPrintA4,
+  onLoadDemo,
 }) => {
   const t = translations[language];
 
@@ -43,6 +45,30 @@ export const ExportSection: React.FC<ExportSectionProps> = ({
           <p className="text-xs text-slate-400 mt-0.5">High-definition prints, digital passports & batch archives</p>
         </div>
       </div>
+
+      {/* Guide Banner when no photo is active yet */}
+      {!canExport && (
+        <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center space-x-2 text-indigo-300">
+            <Info className="w-4 h-4 flex-shrink-0 text-cyan-400" />
+            <span>
+              {language === 'bn'
+                ? 'সব ফিচার ও এক্সপোর্ট দেখতে ছবি আপলোড করুন অথবা ডেমো ছবি লোড করুন।'
+                : 'Upload a photo or load demo to unlock all exports, A4 PDF, and print features.'}
+            </span>
+          </div>
+          {onLoadDemo && (
+            <button
+              type="button"
+              onClick={onLoadDemo}
+              disabled={isProcessing}
+              className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-[11px] shadow transition whitespace-nowrap"
+            >
+              {language === 'bn' ? 'ডেমো লোড করুন' : 'Load Demo'}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Main Action Generation Buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

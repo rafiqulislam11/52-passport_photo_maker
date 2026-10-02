@@ -43,6 +43,7 @@ export const StudioPage: React.FC = () => {
     setActiveTab,
     statusMessage,
     handleProcessActive,
+    handleLoadDemoPhoto,
     updateA4Preview,
     handleAutoFitA4,
     handlePageChange,
@@ -65,7 +66,44 @@ export const StudioPage: React.FC = () => {
       onOpenSettings={() => setIsSettingsModalOpen(true)}
       onPrint={handlePrintA4}
       hasProcessed={hasProcessed}
+      onLoadDemo={handleLoadDemoPhoto}
     >
+      {/* Feature Showcase Highlights Banner */}
+      <div className="mb-6 p-3 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 shadow-lg flex flex-wrap items-center justify-between gap-3 text-xs no-print">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 text-slate-300">
+          <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-medium">
+            <span>📸</span>
+            <span>ICAO Biometric Face-Crop</span>
+          </span>
+          <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-medium">
+            <span>✂️</span>
+            <span>AI Background Remover</span>
+          </span>
+          <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-medium">
+            <span>📄</span>
+            <span>A4 Auto-Grid & PDF</span>
+          </span>
+          <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-300 border border-purple-500/20 font-medium">
+            <span>✨</span>
+            <span>Skin Smoothing</span>
+          </span>
+          <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20 font-medium">
+            <span>🇧🇩</span>
+            <span>Bangladesh Passport (35×45mm)</span>
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleLoadDemoPhoto}
+          disabled={isProcessing}
+          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-semibold shadow-md transition hover:scale-105 disabled:opacity-50 text-xs"
+        >
+          <span>✨</span>
+          <span>{language === 'bn' ? 'ডেমো ছবি দিয়ে ফুল ফিচার টেস্ট করুন' : 'Load Demo (Test All Features)'}</span>
+        </button>
+      </div>
+
       {/* Responsive 2-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Studio Controls & Configuration (7 cols on lg) */}
@@ -80,6 +118,7 @@ export const StudioPage: React.FC = () => {
             onRemoveItem={handleRemoveItem}
             onClearQueue={handleClearQueue}
             isProcessing={isProcessing}
+            onLoadDemo={handleLoadDemoPhoto}
           />
 
           {/* Section 2: Photo Settings & Presets */}
@@ -151,6 +190,7 @@ export const StudioPage: React.FC = () => {
             onDownloadA4Pdf={handleDownloadA4Pdf}
             onDownloadZip={handleDownloadZip}
             onPrintA4={handlePrintA4}
+            onLoadDemo={handleLoadDemoPhoto}
           />
         </div>
 
@@ -191,6 +231,7 @@ export const StudioPage: React.FC = () => {
               isProcessing={isProcessing}
               onDownloadJpg={handleDownloadSingleJpg}
               onDownloadPng={handleDownloadSinglePng}
+              onLoadDemo={handleLoadDemoPhoto}
             />
           ) : (
             <A4SheetPreview

@@ -50,8 +50,37 @@ export const PhotoSettings: React.FC<PhotoSettingsProps> = ({
       </div>
 
       <div className="space-y-4">
-        {/* Preset Selector Dropdown / Grid */}
+        {/* Quick Presets Pills */}
         <div>
+          <label className="block text-xs font-medium text-slate-300 mb-1.5">
+            {t.quickPresets}
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+            {[
+              { id: 'bangladesh_passport', label: '🇧🇩 BD Passport', sub: '35×45 mm' },
+              { id: 'standard_passport', label: '🌍 ICAO / EU', sub: '35×45 mm' },
+              { id: 'us_passport', label: '🇺🇸 US Visa', sub: '2×2 inch' },
+              { id: 'schengen_visa', label: '🇪🇺 Schengen', sub: '35×45 mm' },
+            ].map((p) => {
+              const isSelected = settings.preset_id === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => handlePresetSelect(p.id)}
+                  className={`p-2 rounded-xl text-left border transition-all ${
+                    isSelected
+                      ? 'border-indigo-500 bg-indigo-500/20 text-white ring-1 ring-indigo-500'
+                      : 'border-slate-700 bg-slate-900/60 text-slate-300 hover:border-slate-600 hover:bg-slate-900'
+                  }`}
+                >
+                  <div className="text-xs font-semibold truncate">{p.label}</div>
+                  <div className="text-[10px] text-slate-400 font-mono mt-0.5">{p.sub}</div>
+                </button>
+              );
+            })}
+          </div>
+
           <label className="block text-xs font-medium text-slate-300 mb-1.5">
             {t.presetLabel}
           </label>

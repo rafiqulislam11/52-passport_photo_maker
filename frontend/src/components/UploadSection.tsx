@@ -12,6 +12,7 @@ interface UploadSectionProps {
   onRemoveItem: (id: string) => void;
   onClearQueue: () => void;
   isProcessing: boolean;
+  onLoadDemo?: () => void;
 }
 
 export const UploadSection: React.FC<UploadSectionProps> = ({
@@ -23,6 +24,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
   onRemoveItem,
   onClearQueue,
   isProcessing,
+  onLoadDemo,
 }) => {
   const t = translations[language];
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -147,6 +149,38 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Quick Demo Portrait Trigger for instant full-feature testing */}
+      {onLoadDemo && (
+        <div className="mt-3 flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-indigo-950/70 via-purple-950/40 to-slate-900 border border-indigo-500/40 shadow-inner">
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-cyan-300 shadow-sm flex-shrink-0">
+              <Sparkles className="w-5 h-5 text-indigo-400 animate-pulse" />
+            </div>
+            <div>
+              <span className="text-xs font-semibold text-slate-100 block">
+                {t.tryDemoBtn}
+              </span>
+              <span className="text-[11px] text-slate-400 block">
+                {t.tryDemoDesc}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onLoadDemo();
+            }}
+            disabled={isProcessing}
+            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white text-xs font-semibold shadow-md transition disabled:opacity-50 flex items-center space-x-1.5 flex-shrink-0"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-cyan-200" />
+            <span>{isProcessing ? t.processingBtn : 'Load Demo'}</span>
+          </button>
+        </div>
+      )}
 
       {/* Upload queue list */}
       {queue.length > 0 && (

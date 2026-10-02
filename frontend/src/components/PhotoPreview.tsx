@@ -10,6 +10,7 @@ interface PhotoPreviewProps {
   isProcessing: boolean;
   onDownloadJpg: () => void;
   onDownloadPng: () => void;
+  onLoadDemo?: () => void;
 }
 
 export const PhotoPreview: React.FC<PhotoPreviewProps> = ({
@@ -19,6 +20,7 @@ export const PhotoPreview: React.FC<PhotoPreviewProps> = ({
   isProcessing,
   onDownloadJpg,
   onDownloadPng,
+  onLoadDemo,
 }) => {
   const t = translations[language];
   const [showOriginal, setShowOriginal] = useState(false);
@@ -107,13 +109,28 @@ export const PhotoPreview: React.FC<PhotoPreviewProps> = ({
             )}
           </div>
         ) : (
-          <div className="w-56 h-72 rounded-2xl border-2 border-dashed border-slate-700/80 bg-slate-900/40 flex flex-col items-center justify-center p-4 text-center">
-            <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-500 mb-2">
-              <Eye className="w-6 h-6" />
+          <div className="w-64 h-80 rounded-2xl border-2 border-dashed border-slate-700/80 bg-slate-900/40 flex flex-col items-center justify-center p-5 text-center">
+            <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 mb-3 shadow-inner">
+              <Eye className="w-6 h-6 text-indigo-400" />
             </div>
-            <p className="text-xs text-slate-400 font-medium">
-              Upload a photo to preview passport photo
+            <p className="text-xs text-slate-200 font-semibold mb-1">
+              {language === 'bn' ? 'কোনো ছবি নির্বাচিত নেই' : 'No photo loaded yet'}
             </p>
+            <p className="text-[11px] text-slate-400 mb-4 max-w-[200px] leading-relaxed">
+              {language === 'bn'
+                ? 'ছবি আপলোড করুন অথবা ডেমো ছবি দিয়ে তাৎক্ষণিক সব ফিচার টেস্ট করুন'
+                : 'Upload your photo or test instantly with our studio demo portrait'}
+            </p>
+            {onLoadDemo && (
+              <button
+                type="button"
+                onClick={onLoadDemo}
+                className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 transition-all hover:scale-105"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-cyan-200" />
+                <span>{t.tryDemoBtn}</span>
+              </button>
+            )}
           </div>
         )}
       </div>

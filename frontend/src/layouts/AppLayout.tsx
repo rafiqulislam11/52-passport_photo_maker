@@ -10,6 +10,7 @@ interface AppLayoutProps {
   onOpenSettings: () => void;
   onPrint: () => void;
   hasProcessed: boolean;
+  onLoadDemo?: () => void;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
@@ -20,6 +21,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   onOpenSettings,
   onPrint,
   hasProcessed,
+  onLoadDemo,
 }) => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
@@ -31,6 +33,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         onOpenSettings={onOpenSettings}
         onPrint={onPrint}
         hasProcessed={hasProcessed}
+        onLoadDemo={onLoadDemo}
       />
 
       {/* Main Content Area */}

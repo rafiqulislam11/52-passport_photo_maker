@@ -116,6 +116,17 @@ def get_presets():
         "data": PRESETS
     }
 
+@router.get("/sample-photo")
+def get_sample_photo():
+    asset_path = Path(__file__).resolve().parent.parent / "assets" / "demo_portrait.jpg"
+    if asset_path.exists():
+        return FileResponse(asset_path, media_type="image/jpeg")
+    temp_sample = settings.temp_dir / "sample_portrait.jpg"
+    if temp_sample.exists():
+        return FileResponse(temp_sample, media_type="image/jpeg")
+    raise HTTPException(status_code=404, detail="Sample photo not found")
+
+
 @router.post("/upload")
 async def upload_file(
     file: UploadFile = File(...),

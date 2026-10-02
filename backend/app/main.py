@@ -2,7 +2,7 @@ import time
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from .core.config import settings
+from .core.config import settings, BASE_DIR
 from .core.security import cleanup_temp_files
 from .api.routes import router
 
@@ -48,6 +48,12 @@ app.include_router(router)
 
 # Mount outputs for static file serving
 app.mount("/outputs", StaticFiles(directory=str(settings.output_dir)), name="outputs")
+
+# Mount frontend dist static files if built
+frontend_dist = BASE_DIR.parent / "frontend" / "dist"
+if frontend_dist.exists() and (frontend_dist / "index.html").exists():
+    app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")
+
 
 if __name__ == "__main__":
     import uvicorn
