@@ -16,6 +16,7 @@ class Settings(BaseModel):
     app_env: str = os.getenv("APP_ENV", "development")
     api_key_enabled: bool = os.getenv("API_KEY_ENABLED", "false").lower() == "true"
     app_api_key: str = os.getenv("APP_API_KEY", "change-this-key")
+    remove_bg_api_key: str = os.getenv("REMOVE_BG_API_KEY", "")
     max_upload_mb: int = int(os.getenv("MAX_UPLOAD_MB", "50"))
     default_dpi: int = int(os.getenv("DEFAULT_DPI", "300"))
     cors_origins: list[str] = [

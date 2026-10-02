@@ -79,6 +79,7 @@ export interface PhotoSettingsState {
   smooth_skin: boolean;
   auto_align: boolean;
   manual_crop?: ManualCropSettings;
+  remove_bg_api_key?: string;
 }
 
 export type PaperSize = 'A4' | 'A5' | 'Letter';
@@ -130,4 +131,5 @@ export interface StudioSettings {
   autoAlign: boolean;
   outputFormat: 'jpg' | 'png';
   apiKey: string;
+  removeBgApiKey?: string;
 }

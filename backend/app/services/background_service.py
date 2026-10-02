@@ -1,8 +1,10 @@
 import io
+import requests
 import cv2
 import numpy as np
 from PIL import Image, ImageFilter
 from typing import Optional
+from ..core.config import settings
 
 # Try importing rembg and creating a reusable session
 REMBG_AVAILABLE = False
@@ -27,11 +29,54 @@ def get_rembg_session():
                 _SESSION = None
     return _SESSION
 
-def extract_foreground_rgba(pil_img: Image.Image) -> Image.Image:
+def remove_background_with_removebg_api(pil_img: Image.Image, api_key: str) -> Optional[Image.Image]:
     """
-    Extracts the foreground subject with alpha transparency.
-    Uses rembg first; if unavailable or error occurs, falls back to OpenCV GrabCut.
+    Calls official remove.bg Real Cloud API to extract foreground subject.
+    Returns transparent RGBA PIL Image if successful, or None on failure.
     """
+    if not api_key or not api_key.strip():
+        return None
+    try:
+        buf = io.BytesIO()
+        pil_img.save(buf, format="PNG")
+        buf.seek(0)
+
+        response = requests.post(
+            "https://api.remove.bg/v1.0/removebg",
+            files={"image_file": ("image.png", buf.getvalue(), "image/png")},
+            data={"size": "auto"},
+            headers={"X-Api-Key": api_key.strip()},
+            timeout=15,
+        )
+
+        if response.status_code == 200:
+            result = Image.open(io.BytesIO(response.content)).convert("RGBA")
+            # Slightly smooth alpha edge
+            alpha = result.split()[3]
+            alpha_smooth = alpha.filter(ImageFilter.GaussianBlur(radius=0.5))
+            result.putalpha(alpha_smooth)
+            return result
+        else:
+            print(f"[remove.bg API Warning] HTTP {response.status_code}: {response.text[:120]}")
+    except Exception as e:
+        print(f"[remove.bg API Error]: {e}")
+    return None
+
+def extract_foreground_rgba(pil_img: Image.Image, remove_bg_api_key: Optional[str] = None) -> Image.Image:
+    """
+    Extracts foreground subject with alpha transparency:
+    1. If remove_bg_api_key is provided, attempts official remove.bg Real Cloud API.
+    2. Otherwise or on failure, uses built-in local Deep Learning rembg (u2net ONNX).
+    3. If rembg fails, falls back gracefully to OpenCV GrabCut segmentation.
+    """
+    # 1. Try Real External remove.bg API if key provided
+    effective_api_key = remove_bg_api_key or getattr(settings, "remove_bg_api_key", None)
+    if effective_api_key:
+        api_result = remove_background_with_removebg_api(pil_img, effective_api_key)
+        if api_result is not None:
+            return api_result
+
+    # 2. Local Deep Learning rembg
     if REMBG_AVAILABLE:
         try:
             session = get_rembg_session()

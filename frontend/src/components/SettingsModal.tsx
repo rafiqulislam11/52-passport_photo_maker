@@ -137,15 +137,38 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </label>
           </div>
 
-          {/* Optional API Key */}
+          {/* Real API Key (Remove.bg) */}
+          <div className="pt-2 border-t border-slate-800 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-200 flex items-center space-x-1.5">
+                <Shield className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Remove.bg Real API Key (Optional)</span>
+              </label>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${form.removeBgApiKey?.trim() ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}>
+                {form.removeBgApiKey?.trim() ? '✓ Cloud Real API' : '⚡ Local AI (Free)'}
+              </span>
+            </div>
+            <input
+              type="password"
+              placeholder="Paste remove.bg API key (e.g. k5x...)"
+              value={form.removeBgApiKey || ''}
+              onChange={(e) => setForm({ ...form, removeBgApiKey: e.target.value })}
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono"
+            />
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Enter your real <a href="https://www.remove.bg/api" target="_blank" rel="noreferrer" className="text-emerald-400 underline hover:text-emerald-300">remove.bg API Key</a> for cloud AI segmentation. Leave blank to use the built-in free Deep Learning U2Net AI!
+            </p>
+          </div>
+
+          {/* Optional Server Security Key */}
           <div className="pt-2 border-t border-slate-800">
             <label className="block text-xs font-medium text-slate-300 mb-1 flex items-center space-x-1.5">
               <Key className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Optional API Key (X-API-Key)</span>
+              <span>Backend Access Key (X-API-Key)</span>
             </label>
             <input
               type="password"
-              placeholder="Leave empty if API key is not enabled"
+              placeholder="Leave empty unless backend authentication is enabled"
               value={form.apiKey}
               onChange={(e) => setForm({ ...form, apiKey: e.target.value })}
               className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"

@@ -124,4 +124,5 @@ export const INITIAL_STUDIO_SETTINGS: StudioSettings = {
   autoAlign: true,
   outputFormat: "jpg",
   apiKey: "",
+  removeBgApiKey: "",
 };

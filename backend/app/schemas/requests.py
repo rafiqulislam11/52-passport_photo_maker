@@ -24,6 +24,7 @@ class PhotoProcessOptions(BaseModel):
     smooth_skin: bool = True
     auto_align: bool = True
     manual_crop: Optional[ManualCropSettings] = None
+    remove_bg_api_key: Optional[str] = None
 
 class A4LayoutOptions(BaseModel):
     paper_size: Literal["A4", "A5", "Letter"] = "A4"

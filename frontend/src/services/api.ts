@@ -15,6 +15,19 @@ export function getApiKey(): string {
   return '';
 }
 
+export function getRemoveBgApiKey(): string {
+  try {
+    const saved = localStorage.getItem('ppm_settings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return parsed.removeBgApiKey || '';
+    }
+  } catch {
+    // fallback
+  }
+  return '';
+}
+
 function getHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
   const headers: Record<string, string> = { ...customHeaders };
   const key = getApiKey();
@@ -87,6 +100,7 @@ export async function processPhotoApi(
     smooth_skin: Boolean(options.smooth_skin),
     auto_align: Boolean(options.auto_align),
     manual_crop: options.manual_crop,
+    remove_bg_api_key: options.remove_bg_api_key || getRemoveBgApiKey() || undefined,
   };
 
   formData.append('options_json', JSON.stringify(payload));

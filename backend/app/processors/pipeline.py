@@ -39,7 +39,10 @@ def run_photo_processing_pipeline(
         except Exception:
             custom_bg_img = None
 
-    foreground_rgba = extract_foreground_rgba(framed_img)
+    foreground_rgba = extract_foreground_rgba(
+        framed_img,
+        remove_bg_api_key=options.remove_bg_api_key
+    )
     composed_img = compose_background(
         foreground_rgba=foreground_rgba,
         bg_type=options.background_type,
