@@ -1,5 +1,6 @@
 import time
 from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from .core.config import settings, BASE_DIR
@@ -53,6 +54,15 @@ app.mount("/outputs", StaticFiles(directory=str(settings.output_dir)), name="out
 frontend_dist = BASE_DIR.parent / "frontend" / "dist"
 if frontend_dist.exists() and (frontend_dist / "index.html").exists():
     app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")
+
+    @app.exception_handler(404)
+    async def spa_404_fallback(request: Request, exc):
+        path = request.url.path
+        if not path.startswith("/api") and not path.startswith("/outputs") and not path.startswith("/docs"):
+            index_path = frontend_dist / "index.html"
+            if index_path.exists():
+                return FileResponse(index_path)
+        return JSONResponse(status_code=404, content={"detail": "Not Found"})
 
 
 if __name__ == "__main__":

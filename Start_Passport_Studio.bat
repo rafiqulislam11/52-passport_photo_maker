@@ -5,6 +5,12 @@ echo       Passport Photo Maker Pro - AI Studio
 echo ========================================================
 echo.
 
+if not exist "frontend\dist\index.html" (
+    echo [SETUP] Frontend dist not found. Building frontend assets...
+    call npm.cmd run build --prefix frontend
+    echo.
+)
+
 netstat -ano | findstr :8000 >nul 2>&1
 if %errorlevel% equ 0 (
     echo [OK] Backend server is already running on port 8000!
