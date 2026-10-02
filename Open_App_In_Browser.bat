@@ -3,7 +3,7 @@ echo ========================================================
 echo   Launching Passport Photo Maker Pro in Browser...
 echo ========================================================
 echo.
-echo Opening: http://localhost:5173
+echo Opening: http://localhost:8000
 echo.
-start http://localhost:5173
+start http://localhost:8000
 exit
