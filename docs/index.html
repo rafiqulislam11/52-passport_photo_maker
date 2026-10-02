@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Passport Photo Maker Pro — AI Passport Photo & A4 Print Studio</title>
+    <meta name="description" content="Transform any portrait into professional biometric passport photos, auto-enhance, remove or customize backgrounds, and generate print-ready A4 sheets with multi-page export." />
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="./assets/index-vXhV0mzE.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-7Mg6zfpd.css">
+  </head>
+  <body class="bg-slate-900 text-slate-100 min-h-screen selection:bg-indigo-500 selection:text-white">
+    <div id="root"></div>
+
+    <!-- Friendly fallback when opened directly via file:// instead of localhost web server -->
+    <script>
+      if (window.location.protocol === 'file:') {
+        window.addEventListener('DOMContentLoaded', function () {
+          setTimeout(function () {
+            var root = document.getElementById('root');
+            if (root && (!root.children || root.children.length === 0)) {
+              root.innerHTML = `
+                <div style="min-height: 100vh; background: #0b0f19; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; padding: 24px;">
+                  <div style="max-width: 580px; width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 36px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6); text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📸</div>
+                    <h1 style="font-size: 22px; font-weight: 700; margin-bottom: 12px; color: #ffffff;">
+                      পাসপোর্ট ফটো মেকার প্রো
+                    </h1>
+                    <p style="font-size: 14px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px;">
+                      আপনি সরাসরি ফাইল ডাবল ক্লিক করে ওপেন করেছেন। ব্রাউজার সিকিউরিটি (CORS) পলিসির কারণে আধুনিক রিঅ্যাক্ট অ্যাপ লোকালহোস্ট সার্ভার থেকে ওপেন করতে হয়। অনুগ্রহ করে নিচের বাটনে ক্লিক করুন:
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+                      <a href="http://localhost:5173" style="display: inline-block; background: linear-gradient(135deg, #4f46e5, #06b6d4); color: #ffffff; font-weight: 600; font-size: 15px; padding: 12px 28px; border-radius: 12px; text-decoration: none; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);">
+                        👉 Open http://localhost:5173
+                      </a>
+                      <a href="http://localhost:8000" style="display: inline-block; background: #334155; color: #cbd5e1; font-weight: 500; font-size: 13px; padding: 8px 20px; border-radius: 10px; text-decoration: none;">
+                        অথবা: http://localhost:8000
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
+          }, 300);
+        });
+      }
+    </script>
+
+  </body>
+</html>

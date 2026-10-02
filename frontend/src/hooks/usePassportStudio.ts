@@ -168,11 +168,14 @@ export function usePassportStudio() {
     setIsProcessing(true);
     setStatusMessage('Processing photo with AI...');
 
+    const activeObj = queue.find((i) => i.id === activeId);
+
     try {
       const result = await processPhotoApi(
         activeId,
         photoSettings,
-        photoSettings.custom_bg_file
+        photoSettings.custom_bg_file,
+        activeObj?.file
       );
 
       setQueue((prev) =>
@@ -201,19 +204,23 @@ export function usePassportStudio() {
     } finally {
       setIsProcessing(false);
     }
-  }, [activeId, photoSettings, a4Settings]);
+  }, [activeId, queue, photoSettings, a4Settings]);
 
   // Update A4 Layout Preview
   const updateA4Preview = useCallback(
     async (fileId: string, layout: A4LayoutSettings) => {
       setIsLayoutLoading(true);
+      const activeObj = queue.find((i) => i.id === fileId || (i.processedResult && i.processedResult.file_id === fileId));
+      const fallbackUrl = activeObj?.processedResult?.image_url || activeObj?.previewUrl;
+
       try {
         const preview = await generateA4PreviewApi(
           fileId,
           layout,
           photoSettings.photo_width_mm,
           photoSettings.photo_height_mm,
-          layout.copies_count
+          layout.copies_count,
+          fallbackUrl
         );
         setA4Preview(preview);
       } catch (err) {
@@ -222,7 +229,7 @@ export function usePassportStudio() {
         setIsLayoutLoading(false);
       }
     },
-    [photoSettings.photo_width_mm, photoSettings.photo_height_mm]
+    [queue, photoSettings.photo_width_mm, photoSettings.photo_height_mm]
   );
 
   // Load Demo Photo with full features enabled
@@ -230,9 +237,15 @@ export function usePassportStudio() {
     setIsProcessing(true);
     setStatusMessage('Loading demo portrait...');
     try {
-      let res = await fetch('/demo_portrait.jpg');
-      if (!res.ok) {
-        res = await fetch('/api/sample-photo');
+      let res: Response | null = await fetch('./demo_portrait.jpg').catch(() => null);
+      if (!res || !res.ok) {
+        res = await fetch('/demo_portrait.jpg').catch(() => null);
+      }
+      if (!res || !res.ok) {
+        res = await fetch('/api/sample-photo').catch(() => null);
+      }
+      if (!res || !res.ok) {
+        throw new Error('Demo photo not accessible');
       }
       const blob = await res.blob();
       const demoFile = new File([blob], 'demo_portrait.jpg', { type: 'image/jpeg' });
@@ -260,7 +273,8 @@ export function usePassportStudio() {
       const processed = await processPhotoApi(
         uploadResult.file_id,
         photoSettings,
-        photoSettings.custom_bg_file
+        photoSettings.custom_bg_file,
+        demoFile
       );
 
       setQueue([
@@ -347,7 +361,8 @@ export function usePassportStudio() {
         photoSettings.photo_width_mm,
         photoSettings.photo_height_mm,
         a4Settings.copies_count,
-        'jpg'
+        'jpg',
+        activeItem.processedResult.image_url
       );
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -377,7 +392,8 @@ export function usePassportStudio() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      alert(err.message || 'PDF Download failed');
+      alert('PDF ডাউনলোড না হলে ব্রাউজারের প্রিন্ট ডায়ালগ থেকে খুব সহজেই Save as PDF করতে পারেন (Ctrl + P চাপুন)।');
+      window.print();
     }
   };
 
