@@ -199,3 +199,31 @@ def test_zip_export():
     assert zip_resp.headers["content-type"] == "application/zip"
     assert len(zip_resp.content) > 1000
     assert zip_resp.content.startswith(b"PK")
+
+def test_manual_crop_processing():
+    raw_img = create_synthetic_portrait_image(with_face=True)
+    opts = {
+        "preset_id": "us_passport",
+        "photo_width_mm": 50.8,
+        "photo_height_mm": 50.8,
+        "unit": "inch",
+        "dpi": 300,
+        "auto_align": False,
+        "manual_crop": {
+            "zoom": 1.25,
+            "offset_x": 10,
+            "offset_y": -15,
+            "rotation": 5
+        },
+        "background_type": "white"
+    }
+    files = {"file": ("manual_portrait.jpg", raw_img, "image/jpeg")}
+    response = client.post("/api/process", files=files, data={"options_json": json.dumps(opts)})
+    assert response.status_code == 200
+    res = response.json()
+    assert res["success"] is True
+    data = res["data"]
+    assert data["width_px"] == 600
+    assert data["height_px"] == 600
+    assert data["image_url"].startswith("data:image/")
+

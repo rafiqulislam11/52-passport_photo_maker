@@ -97,37 +97,70 @@ export const ExportSection: React.FC<ExportSectionProps> = ({
         </button>
       </div>
 
-      {/* Download Action Buttons */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2">
-        <button
-          type="button"
-          onClick={onDownloadA4Pdf}
-          disabled={!canExport}
-          className="flex items-center justify-center space-x-2 p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-medium transition disabled:opacity-40"
-        >
-          <FileText className="w-3.5 h-3.5 text-rose-400" />
-          <span>{t.downloadPdfBtn}</span>
-        </button>
+      {/* Single Photo Downloads */}
+      <div>
+        <label className="block text-[11px] font-medium text-slate-400 mb-1.5">
+          {language === 'bn' ? 'একক পাসপোর্ট ছবি ডাউনলোড' : 'Single Photo Download'}
+        </label>
+        <div className="grid grid-cols-2 gap-2.5">
+          <button
+            type="button"
+            onClick={onDownloadJpg}
+            disabled={!canExport}
+            className="flex items-center justify-center space-x-2 p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-semibold transition disabled:opacity-40 hover:border-indigo-500/50"
+          >
+            <Download className="w-3.5 h-3.5 text-indigo-400" />
+            <span>{t.downloadJpgBtn}</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={onDownloadA4Jpg}
-          disabled={!canExport}
-          className="flex items-center justify-center space-x-2 p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-medium transition disabled:opacity-40"
-        >
-          <Image className="w-3.5 h-3.5 text-indigo-400" />
-          <span>A4 Sheet (JPG)</span>
-        </button>
+          <button
+            type="button"
+            onClick={onDownloadPng}
+            disabled={!canExport}
+            className="flex items-center justify-center space-x-2 p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-semibold transition disabled:opacity-40 hover:border-cyan-500/50"
+          >
+            <Download className="w-3.5 h-3.5 text-cyan-400" />
+            <span>{t.downloadPngBtn}</span>
+          </button>
+        </div>
+      </div>
 
-        <button
-          type="button"
-          onClick={onDownloadZip}
-          disabled={!canExport}
-          className="flex items-center justify-center space-x-2 p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-medium transition disabled:opacity-40"
-        >
-          <Archive className="w-3.5 h-3.5 text-amber-400" />
-          <span>{t.downloadZipBtn}</span>
-        </button>
+      {/* A4 Sheet & Package Downloads */}
+      <div>
+        <label className="block text-[11px] font-medium text-slate-400 mb-1.5">
+          {language === 'bn' ? 'প্রিন্ট শিট ও প্যাকেজ ডাউনলোড' : 'Print Sheets & Package Exports'}
+        </label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          <button
+            type="button"
+            onClick={onDownloadA4Pdf}
+            disabled={!canExport}
+            className="flex items-center justify-center space-x-2 p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-medium transition disabled:opacity-40 hover:border-rose-500/50"
+          >
+            <FileText className="w-3.5 h-3.5 text-rose-400" />
+            <span>{t.downloadPdfBtn}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onDownloadA4Jpg}
+            disabled={!canExport}
+            className="flex items-center justify-center space-x-2 p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-medium transition disabled:opacity-40 hover:border-indigo-500/50"
+          >
+            <Image className="w-3.5 h-3.5 text-indigo-400" />
+            <span>A4 Sheet (JPG)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onDownloadZip}
+            disabled={!canExport}
+            className="flex items-center justify-center space-x-2 p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-medium transition disabled:opacity-40 hover:border-amber-500/50"
+          >
+            <Archive className="w-3.5 h-3.5 text-amber-400" />
+            <span>{t.downloadZipBtn}</span>
+          </button>
+        </div>
       </div>
 
       {/* Real Print A4 Button */}

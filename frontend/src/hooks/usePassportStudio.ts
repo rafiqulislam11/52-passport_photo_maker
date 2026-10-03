@@ -162,19 +162,46 @@ export function usePassportStudio() {
     setA4Preview(undefined);
   }, []);
 
+  // Update A4 Layout Preview
+  const updateA4Preview = useCallback(
+    async (fileId: string, layout: A4LayoutSettings) => {
+      setIsLayoutLoading(true);
+      const activeObj = queue.find((i) => i.id === fileId || (i.processedResult && i.processedResult.file_id === fileId));
+      const fallbackUrl = activeObj?.processedResult?.image_url || activeObj?.previewUrl;
+
+      try {
+        const preview = await generateA4PreviewApi(
+          fileId,
+          layout,
+          photoSettings.photo_width_mm,
+          photoSettings.photo_height_mm,
+          layout.copies_count,
+          fallbackUrl
+        );
+        setA4Preview(preview);
+      } catch (err) {
+        console.error('Failed to update A4 preview', err);
+      } finally {
+        setIsLayoutLoading(false);
+      }
+    },
+    [queue, photoSettings.photo_width_mm, photoSettings.photo_height_mm]
+  );
+
   // Process Single Active Photo
-  const handleProcessActive = useCallback(async () => {
+  const handleProcessActive = useCallback(async (customSettings?: PhotoSettingsState) => {
     if (!activeId) return;
     setIsProcessing(true);
     setStatusMessage('Processing photo with AI...');
 
     const activeObj = queue.find((i) => i.id === activeId);
+    const settingsToUse = customSettings || photoSettings;
 
     try {
       const result = await processPhotoApi(
         activeId,
-        photoSettings,
-        photoSettings.custom_bg_file,
+        settingsToUse,
+        settingsToUse.custom_bg_file,
         activeObj?.file
       );
 
@@ -204,33 +231,7 @@ export function usePassportStudio() {
     } finally {
       setIsProcessing(false);
     }
-  }, [activeId, queue, photoSettings, a4Settings]);
-
-  // Update A4 Layout Preview
-  const updateA4Preview = useCallback(
-    async (fileId: string, layout: A4LayoutSettings) => {
-      setIsLayoutLoading(true);
-      const activeObj = queue.find((i) => i.id === fileId || (i.processedResult && i.processedResult.file_id === fileId));
-      const fallbackUrl = activeObj?.processedResult?.image_url || activeObj?.previewUrl;
-
-      try {
-        const preview = await generateA4PreviewApi(
-          fileId,
-          layout,
-          photoSettings.photo_width_mm,
-          photoSettings.photo_height_mm,
-          layout.copies_count,
-          fallbackUrl
-        );
-        setA4Preview(preview);
-      } catch (err) {
-        console.error('Failed to update A4 preview', err);
-      } finally {
-        setIsLayoutLoading(false);
-      }
-    },
-    [queue, photoSettings.photo_width_mm, photoSettings.photo_height_mm]
-  );
+  }, [activeId, queue, photoSettings, a4Settings, updateA4Preview]);
 
   // Load Demo Photo with full features enabled
   const handleLoadDemoPhoto = useCallback(async () => {
@@ -334,8 +335,10 @@ export function usePassportStudio() {
   // Downloads
   const handleDownloadSingleJpg = () => {
     if (!activeItem?.processedResult) return;
+    const res = activeItem.processedResult;
+    const downloadUrl = (res.image_url && res.image_url.startsWith('data:')) ? res.image_url : res.download_jpg_url;
     const link = document.createElement('a');
-    link.href = activeItem.processedResult.download_jpg_url;
+    link.href = downloadUrl;
     link.download = `passport-${activeItem.originalName.replace(/\.[^/.]+$/, '')}.jpg`;
     document.body.appendChild(link);
     link.click();
@@ -344,8 +347,12 @@ export function usePassportStudio() {
 
   const handleDownloadSinglePng = () => {
     if (!activeItem?.processedResult) return;
+    const res = activeItem.processedResult;
+    const downloadUrl = (res.download_png_url && res.download_png_url.startsWith('data:'))
+      ? res.download_png_url
+      : (res.image_url || res.download_png_url);
     const link = document.createElement('a');
-    link.href = activeItem.processedResult.download_png_url;
+    link.href = downloadUrl;
     link.download = `passport-${activeItem.originalName.replace(/\.[^/.]+$/, '')}.png`;
     document.body.appendChild(link);
     link.click();

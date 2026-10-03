@@ -79,15 +79,17 @@ export async function clientProcessPhoto(
   const sourceAspect = sWidth / sHeight;
 
   if (options.manual_crop) {
-    const zoom = options.manual_crop.zoom || 1.0;
+    const zoom = Math.max(0.2, options.manual_crop.zoom || 1.0);
     const cropW = sWidth / zoom;
     const cropH = cropW / targetAspect;
-    const centerX = sWidth / 2 + (options.manual_crop.offset_x || 0) * (sWidth / 2);
-    const centerY = sHeight / 2 + (options.manual_crop.offset_y || 0) * (sHeight / 2);
+    const shiftX = ((options.manual_crop.offset_x || 0) / 100.0) * cropW;
+    const shiftY = ((options.manual_crop.offset_y || 0) / 100.0) * cropH;
+    const centerX = sWidth / 2 + shiftX;
+    const centerY = sHeight / 2 + shiftY;
     sx = Math.max(0, Math.min(sWidth - cropW, centerX - cropW / 2));
     sy = Math.max(0, Math.min(sHeight - cropH, centerY - cropH / 2));
-    sWidth = cropW;
-    sHeight = cropH;
+    sWidth = Math.min(cropW, sWidth);
+    sHeight = Math.min(cropH, sHeight);
   } else {
     // Biometric auto-framing: center horizontally, prioritize upper portion for head
     if (sourceAspect > targetAspect) {
@@ -109,7 +111,7 @@ export async function clientProcessPhoto(
   if (!ctx) throw new Error('Could not create 2D canvas context');
 
   // 6. Draw Background
-  if (!bgWasRemoved) {
+  if (options.background_type !== 'transparent') {
     if (options.background_type === 'white') {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, targetW, targetH);
@@ -146,11 +148,19 @@ export async function clientProcessPhoto(
   filters.push(`contrast(${contrastVal}%)`);
   filters.push(`saturate(${saturateVal}%)`);
 
+  // 8. Draw Cropped Image onto Canvas with optional rotation
+  ctx.save();
   ctx.filter = filters.join(' ');
 
-  // 8. Draw Cropped Image onto Canvas
-  ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetW, targetH);
-  ctx.filter = 'none';
+  const rotationDeg = options.manual_crop?.rotation || 0;
+  if (rotationDeg !== 0) {
+    ctx.translate(targetW / 2, targetH / 2);
+    ctx.rotate((rotationDeg * Math.PI) / 180);
+    ctx.drawImage(img, sx, sy, sWidth, sHeight, -targetW / 2, -targetH / 2, targetW, targetH);
+  } else {
+    ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetW, targetH);
+  }
+  ctx.restore();
 
   // 9. Export Data URLs
   const isPng = options.background_type === 'transparent';

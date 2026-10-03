@@ -263,11 +263,15 @@ export const StudioPage: React.FC = () => {
         initialSettings={photoSettings.manual_crop}
         aspectRatio={photoSettings.photo_width_mm / photoSettings.photo_height_mm}
         onApply={(cropSettings) => {
-          setPhotoSettings((prev) => ({
-            ...prev,
+          const updatedSettings = {
+            ...photoSettings,
             manual_crop: cropSettings,
             auto_align: false,
-          }));
+          };
+          setPhotoSettings(updatedSettings);
+          if (activeId) {
+            handleProcessActive(updatedSettings);
+          }
         }}
         language={language}
       />

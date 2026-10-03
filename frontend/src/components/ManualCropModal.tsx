@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, RotateCw, ZoomIn, Move, Check, RotateCcw } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { X, RotateCw, RotateCcw, ZoomIn, ZoomOut, Move, Check, Compass, Focus } from 'lucide-react';
 import { ManualCropSettings, AppLanguage } from '../types';
 import { translations } from '../utils/translations';
 
@@ -35,6 +35,74 @@ export const ManualCropModal: React.FC<ManualCropModalProps> = ({
     }
   );
 
+  // Sync initialSettings if modal re-opens
+  useEffect(() => {
+    if (initialSettings) {
+      setSettings(initialSettings);
+    }
+  }, [initialSettings]);
+
+  // Drag-to-pan state
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef<{ x: number; y: number; startOffsetX: number; startOffsetY: number }>({
+    x: 0,
+    y: 0,
+    startOffsetX: 0,
+    startOffsetY: 0,
+  });
+
+  // Calculate dynamic framing dimensions based on passport aspect ratio
+  const validRatio = aspectRatio && aspectRatio > 0 ? aspectRatio : 35 / 45;
+  const frameHeight = 320;
+  const frameWidth = Math.round(Math.min(340, Math.max(180, frameHeight * validRatio)));
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      startOffsetX: settings.offset_x,
+      startOffsetY: settings.offset_y,
+    };
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+
+    // Convert pixel movement to percentage range (-100 to 100)
+    const scaleFactor = 100 / (frameHeight / 2);
+    const newOffsetX = Math.max(-100, Math.min(100, Math.round(dragStartRef.current.startOffsetX + dx * scaleFactor)));
+    const newOffsetY = Math.max(-100, Math.min(100, Math.round(dragStartRef.current.startOffsetY + dy * scaleFactor)));
+
+    setSettings((prev) => ({
+      ...prev,
+      offset_x: newOffsetX,
+      offset_y: newOffsetY,
+    }));
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isDragging) {
+      setIsDragging(false);
+      try {
+        (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+      } catch {}
+    }
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.05 : -0.05;
+    setSettings((prev) => ({
+      ...prev,
+      zoom: parseFloat(Math.max(0.5, Math.min(2.5, prev.zoom + delta)).toFixed(2)),
+    }));
+  };
+
   const handleReset = () => {
     setSettings({
       zoom: 1.0,
@@ -51,12 +119,15 @@ export const ManualCropModal: React.FC<ManualCropModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[95vh]">
         {/* Modal Header */}
-        <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div className="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Move className="w-4 h-4 text-cyan-400" />
             <h3 className="text-sm font-semibold text-white">{t.manualAdjustBtn}</h3>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+              Ratio: {validRatio >= 0.99 && validRatio <= 1.01 ? '1:1 Square' : `${validRatio.toFixed(2)}`}
+            </span>
           </div>
           <button
             onClick={onClose}
@@ -66,15 +137,31 @@ export const ManualCropModal: React.FC<ManualCropModalProps> = ({
           </button>
         </div>
 
-        {/* Canvas / Crop framing viewport */}
-        <div className="p-6 bg-slate-950 flex items-center justify-center relative overflow-hidden min-h-[300px]">
+        {/* Canvas / Crop framing viewport with pointer drag and wheel zoom */}
+        <div
+          className="p-6 bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden select-none"
+          onWheel={handleWheel}
+        >
           {imageUrl ? (
-            <div className="relative w-64 h-80 flex items-center justify-center border-2 border-dashed border-indigo-400/60 rounded-lg overflow-hidden bg-slate-900/80 shadow-inner">
+            <div
+              className={`relative flex items-center justify-center border-2 border-dashed border-indigo-400/80 rounded-lg overflow-hidden bg-slate-900 shadow-2xl ${
+                isDragging ? 'cursor-grabbing' : 'cursor-grab'
+              }`}
+              style={{
+                width: `${frameWidth}px`,
+                height: `${frameHeight}px`,
+              }}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+            >
               {/* Image with dynamic transform */}
               <img
                 src={imageUrl}
                 alt="Framing preview"
-                className="max-w-none transition-transform duration-75"
+                draggable={false}
+                className="max-w-none pointer-events-none transition-transform duration-75 select-none"
                 style={{
                   transform: `translate(${settings.offset_x}px, ${settings.offset_y}px) scale(${settings.zoom}) rotate(${settings.rotation}deg)`,
                   width: '100%',
@@ -84,25 +171,67 @@ export const ManualCropModal: React.FC<ManualCropModalProps> = ({
               />
 
               {/* Passport crop mask guideline overlay */}
-              <div className="absolute inset-0 pointer-events-none border border-cyan-400/80">
-                <div className="absolute inset-x-0 top-[15%] h-[1px] bg-cyan-400/40" />
-                <div className="absolute inset-x-0 top-[50%] h-[1px] bg-emerald-400/40" />
-                <div className="absolute inset-x-0 bottom-[15%] h-[1px] bg-cyan-400/40" />
-                <div className="absolute inset-y-0 left-1/2 w-[1px] bg-cyan-400/40" />
+              <div className="absolute inset-0 pointer-events-none border border-cyan-400/60">
+                {/* Crown headroom guide (~12%) */}
+                <div className="absolute inset-x-0 top-[12%] h-[1px] bg-cyan-400/50" />
+                <span className="absolute top-[12%] left-1 text-[8px] text-cyan-300 bg-slate-950/70 px-1 rounded">
+                  Crown (10-15%)
+                </span>
+
+                {/* Eye axis guide (~45%) */}
+                <div className="absolute inset-x-0 top-[45%] h-[1px] bg-emerald-400/60" />
+                <span className="absolute top-[45%] left-1 text-[8px] text-emerald-300 bg-slate-950/70 px-1 rounded">
+                  Eye Axis (45%)
+                </span>
+
+                {/* Chin base guide (~80%) */}
+                <div className="absolute inset-x-0 top-[80%] h-[1px] bg-cyan-400/50" />
+                <span className="absolute top-[80%] left-1 text-[8px] text-cyan-300 bg-slate-950/70 px-1 rounded">
+                  Chin (80%)
+                </span>
+
+                {/* Center vertical axis */}
+                <div className="absolute inset-y-0 left-1/2 w-[1px] bg-cyan-400/50" />
+              </div>
+
+              {/* Drag instruction overlay badge */}
+              <div className="absolute bottom-2 inset-x-0 flex justify-center pointer-events-none">
+                <span className="text-[10px] bg-slate-950/80 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700/60 shadow">
+                  Drag to pan • Scroll to zoom
+                </span>
               </div>
             </div>
           ) : (
-            <p className="text-xs text-slate-500">No image loaded</p>
+            <p className="text-xs text-slate-500 py-12">No image loaded</p>
           )}
         </div>
 
-        {/* Adjustment Sliders */}
-        <div className="p-5 space-y-3 bg-slate-900/90 border-t border-slate-800">
-          {/* Zoom */}
+        {/* Adjustment Sliders & Controls */}
+        <div className="p-4 space-y-3 bg-slate-900/95 border-t border-slate-800 overflow-y-auto">
+          {/* Zoom Control */}
           <div>
             <div className="flex justify-between text-xs text-slate-300 mb-1">
-              <span>Zoom</span>
-              <span className="font-mono text-cyan-400">{settings.zoom.toFixed(2)}x</span>
+              <span className="flex items-center space-x-1.5">
+                <ZoomIn className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Zoom</span>
+              </span>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setSettings((s) => ({ ...s, zoom: Math.max(0.5, parseFloat((s.zoom - 0.1).toFixed(2))) }))}
+                  className="p-0.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
+                >
+                  <ZoomOut className="w-3 h-3" />
+                </button>
+                <span className="font-mono text-cyan-400 text-xs w-12 text-center">{settings.zoom.toFixed(2)}x</span>
+                <button
+                  type="button"
+                  onClick={() => setSettings((s) => ({ ...s, zoom: Math.min(2.5, parseFloat((s.zoom + 0.1).toFixed(2))) }))}
+                  className="p-0.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
+                >
+                  <ZoomIn className="w-3 h-3" />
+                </button>
+              </div>
             </div>
             <input
               type="range"
@@ -115,50 +244,74 @@ export const ManualCropModal: React.FC<ManualCropModalProps> = ({
             />
           </div>
 
-          {/* Horizontal Position */}
-          <div>
-            <div className="flex justify-between text-xs text-slate-300 mb-1">
-              <span>Pan X (Horizontal)</span>
-              <span className="font-mono text-cyan-400">{settings.offset_x}px</span>
+          {/* Pan Controls (X & Y) in 2 columns */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Horizontal Position */}
+            <div>
+              <div className="flex justify-between text-[11px] text-slate-300 mb-1">
+                <span>Pan X (Horizontal)</span>
+                <span className="font-mono text-cyan-400">{settings.offset_x}px</span>
+              </div>
+              <input
+                type="range"
+                min="-100"
+                max="100"
+                value={settings.offset_x}
+                onChange={(e) => setSettings({ ...settings, offset_x: parseInt(e.target.value) || 0 })}
+                className="w-full accent-indigo-500 cursor-pointer"
+              />
             </div>
-            <input
-              type="range"
-              min="-100"
-              max="100"
-              value={settings.offset_x}
-              onChange={(e) => setSettings({ ...settings, offset_x: parseInt(e.target.value) })}
-              className="w-full accent-indigo-500 cursor-pointer"
-            />
+
+            {/* Vertical Position */}
+            <div>
+              <div className="flex justify-between text-[11px] text-slate-300 mb-1">
+                <span>Pan Y (Vertical)</span>
+                <span className="font-mono text-cyan-400">{settings.offset_y}px</span>
+              </div>
+              <input
+                type="range"
+                min="-100"
+                max="100"
+                value={settings.offset_y}
+                onChange={(e) => setSettings({ ...settings, offset_y: parseInt(e.target.value) || 0 })}
+                className="w-full accent-indigo-500 cursor-pointer"
+              />
+            </div>
           </div>
 
-          {/* Vertical Position */}
+          {/* Rotation Control with Quick Rotate Buttons */}
           <div>
             <div className="flex justify-between text-xs text-slate-300 mb-1">
-              <span>Pan Y (Vertical)</span>
-              <span className="font-mono text-cyan-400">{settings.offset_y}px</span>
+              <span className="flex items-center space-x-1.5">
+                <RotateCw className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Rotation</span>
+              </span>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setSettings((s) => ({ ...s, rotation: (s.rotation - 90) % 360 }))}
+                  className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] transition"
+                  title="Rotate -90°"
+                >
+                  -90°
+                </button>
+                <span className="font-mono text-cyan-400 text-xs w-10 text-center">{settings.rotation}°</span>
+                <button
+                  type="button"
+                  onClick={() => setSettings((s) => ({ ...s, rotation: (s.rotation + 90) % 360 }))}
+                  className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] transition"
+                  title="Rotate +90°"
+                >
+                  +90°
+                </button>
+              </div>
             </div>
             <input
               type="range"
-              min="-100"
-              max="100"
-              value={settings.offset_y}
-              onChange={(e) => setSettings({ ...settings, offset_y: parseInt(e.target.value) })}
-              className="w-full accent-indigo-500 cursor-pointer"
-            />
-          </div>
-
-          {/* Rotation */}
-          <div>
-            <div className="flex justify-between text-xs text-slate-300 mb-1">
-              <span>Rotate</span>
-              <span className="font-mono text-cyan-400">{settings.rotation}°</span>
-            </div>
-            <input
-              type="range"
-              min="-30"
-              max="30"
+              min="-180"
+              max="180"
               value={settings.rotation}
-              onChange={(e) => setSettings({ ...settings, rotation: parseInt(e.target.value) })}
+              onChange={(e) => setSettings({ ...settings, rotation: parseInt(e.target.value) || 0 })}
               className="w-full accent-indigo-500 cursor-pointer"
             />
           </div>
